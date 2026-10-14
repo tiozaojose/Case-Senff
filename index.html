@@ -15,7 +15,7 @@ header p { margin:0; color:#cbd5e1; }
 .page-nav select { min-width:190px; border:1px solid #475569; background:#1f2937; color:white; font-weight:600; cursor:pointer; }
 .container { max-width:1450px; margin:auto; padding:24px; }
 .dashboard-view[hidden] { display:none; }
-.kpis { display:grid; grid-template-columns:repeat(5,1fr); gap:14px; margin-bottom:20px; }
+.kpis { display:grid; grid-template-columns:repeat(6,1fr); gap:14px; margin-bottom:20px; }
 .card { background:white; border:1px solid #e5e7eb; border-radius:14px; padding:18px; box-shadow:0 2px 8px rgba(15,23,42,.04); }
 .kpi-label { color:#64748b; font-size:13px; margin-bottom:8px; }
 .kpi-value { font-size:25px; font-weight:750; }
@@ -67,6 +67,7 @@ footer { text-align:center; color:#94a3b8; font-size:12px; padding:30px; }
   <div class="kpis">
     <div class="card"><div class="kpi-label">Total de adesões</div><div class="kpi-value" id="kpiTotal">0</div><div class="kpi-sub">Base filtrada</div></div>
     <div class="card"><div class="kpi-label">Prêmio total</div><div class="kpi-value" id="kpiPremio">R$ 0</div><div class="kpi-sub">Valor mensal da base</div></div>
+    <div class="card"><div class="kpi-label">IOF total</div><div class="kpi-value" id="kpiIof">R$ 0</div><div class="kpi-sub">IOF da base filtrada</div></div>
     <div class="card"><div class="kpi-label">Ticket médio</div><div class="kpi-value" id="kpiTicket">R$ 0</div><div class="kpi-sub">Prêmio médio por adesão</div></div>
     <div class="card"><div class="kpi-label">Taxa de cancelamento</div><div class="kpi-value" id="kpiCancel">0%</div><div class="kpi-sub">Adesões com cancelamento</div></div>
     <div class="card"><div class="kpi-label">Comissão paga</div><div class="kpi-value" id="kpiComissao">R$ 0</div><div class="kpi-sub">Total relacionado à base</div></div>
@@ -104,7 +105,7 @@ footer { text-align:center; color:#94a3b8; font-size:12px; padding:30px; }
       <thead>
         <tr>
           <th>ID</th><th>Canal</th><th>Filial</th><th>Vendedor</th><th>Produto</th>
-          <th>Plano</th><th>Data</th><th>Prêmio</th><th>Status</th><th>Cancel.</th><th>Maturidade</th>
+          <th>Plano</th><th>Data</th><th>Prêmio</th><th>IOF</th><th>Status</th><th>Cancel.</th><th>Maturidade</th>
         </tr>
       </thead>
       <tbody id="tbody"></tbody>
@@ -286,11 +287,13 @@ function render() {
 
   const total = rows.length;
   const premio = rows.reduce((s,r)=>s+Number(r.valor_premio||0),0);
+  const iof = rows.reduce((s,r)=>s+Number(r.valor_iof||0),0);
   const comissao = rows.reduce((s,r)=>s+Number(r.comissao_total||0),0);
   const cancelados = rows.filter(r=>Number(r.qtd_cancelamentos||0)>0).length;
 
   document.getElementById('kpiTotal').textContent = total.toLocaleString('pt-BR');
   document.getElementById('kpiPremio').textContent = money(premio);
+  document.getElementById('kpiIof').textContent = money(iof);
   document.getElementById('kpiTicket').textContent = money(total ? premio/total : 0);
   document.getElementById('kpiCancel').textContent = (total ? cancelados/total*100 : 0).toFixed(1)+'%';
   document.getElementById('kpiComissao').textContent = money(comissao);
@@ -337,6 +340,7 @@ function render() {
       <td>${escapeHTML(r.plano||'')}</td>
       <td>${formatDate(r.data_adesao)}</td>
       <td>${money(r.valor_premio)}</td>
+      <td>${money(r.valor_iof)}</td>
       <td>${escapeHTML(r.status_adesao||'')}</td>
       <td>${Number(r.qtd_cancelamentos||0)}</td>
       <td><span class="badge ${m[1]}">${m[0]}</span></td>
