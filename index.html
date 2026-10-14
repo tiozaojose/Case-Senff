@@ -128,6 +128,7 @@ footer { text-align:center; color:#94a3b8; font-size:12px; padding:30px; }
         <select id="cancelProdutoFiltro" onchange="renderCancelamentos()"><option value="">Todos os produtos</option></select>
         <select id="cancelPlanoFiltro" onchange="renderCancelamentos()"><option value="">Todos os planos</option></select>
         <select id="cancelVendedorFiltro" onchange="renderCancelamentos()"><option value="">Todos os vendedores</option></select>
+        <select id="cancelUsuarioFiltro" onchange="renderCancelamentos()"><option value="">Todos os usuários</option></select>
       </div>
     </div>
     <div class="grid">
@@ -364,6 +365,7 @@ function renderCancelamentos() {
   const produto = document.getElementById('cancelProdutoFiltro').value;
   const plano = document.getElementById('cancelPlanoFiltro').value;
   const vendedor = document.getElementById('cancelVendedorFiltro').value;
+  const usuario = document.getElementById('cancelUsuarioFiltro').value;
   const rows = cancelamentos.filter(row => {
     const adhesion = adesaoPorId.get(String(row.id_adesao));
     return (!search || joinText(row, adhesion).includes(search))
@@ -371,7 +373,8 @@ function renderCancelamentos() {
       && (!canal || row.canal_cancelamento === canal)
       && matchesFilter(adhesion?.produto, produto)
       && matchesFilter(adhesion?.plano, plano)
-      && matchesFilter(adhesion?.vendedor, vendedor);
+      && matchesFilter(adhesion?.vendedor, vendedor)
+      && matchesFilter(row.usuario_registro, usuario);
   });
   const delays = rows.map(row => dateDifference(row.data_solicitacao, row.data_cancelamento));
   const averageDelay = delays.length ? delays.reduce((sum, delay) => sum + delay, 0) / delays.length : 0;
@@ -479,6 +482,7 @@ populateOptions('cancelCanalFiltro', cancelamentos.map(row => row.canal_cancelam
 populateOptions('cancelProdutoFiltro', cancelamentos.map(row => adesaoPorId.get(String(row.id_adesao))?.produto));
 populateOptions('cancelPlanoFiltro', cancelamentos.map(row => adesaoPorId.get(String(row.id_adesao))?.plano));
 populateOptions('cancelVendedorFiltro', cancelamentos.map(row => adesaoPorId.get(String(row.id_adesao))?.vendedor), 'Sem vendedor informado');
+populateOptions('cancelUsuarioFiltro', cancelamentos.map(row => row.usuario_registro), 'Usuário não informado');
 populateOptions('comissaoCompetencia', comissoes.map(row => row.competencia));
 populateOptions('comissaoProduto', comissoes.map(row => adesaoPorId.get(String(row.id_adesao))?.produto));
 populateOptions('comissaoPlano', comissoes.map(row => adesaoPorId.get(String(row.id_adesao))?.plano));
