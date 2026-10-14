@@ -16,7 +16,7 @@ header p { margin:0; color:#cbd5e1; }
 .kpi-label { color:#64748b; font-size:13px; margin-bottom:8px; }
 .kpi-value { font-size:25px; font-weight:750; }
 .kpi-sub { margin-top:7px; font-size:12px; color:#64748b; }
-.filters { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:12px; margin-bottom:20px; }
+.filters { display:grid; grid-template-columns:2fr repeat(5,1fr); gap:12px; margin-bottom:20px; }
 input,select { width:100%; padding:12px; border:1px solid #d7dce5; border-radius:9px; background:white; font-size:14px; }
 .section-title { display:flex; justify-content:space-between; align-items:center; margin:25px 0 10px; }
 .section-title h2 { font-size:18px; margin:0; }
@@ -60,6 +60,8 @@ footer { text-align:center; color:#94a3b8; font-size:12px; padding:30px; }
       <input id="busca" placeholder="🔎 Buscar cliente, vendedor, filial, produto, canal..." oninput="render()">
       <select id="canal" onchange="render()"><option value="">Todos os canais</option><option>Agência</option><option>Digital</option><option>Parceiro</option><option>Telemarketing</option></select>
       <select id="produto" onchange="render()"><option value="">Todos os produtos</option><option>Odonto</option><option>Prestamista</option><option>Residencial</option><option>Saúde</option><option>Vida</option></select>
+      <select id="plano" onchange="render()"><option value="">Todos os planos</option></select>
+      <select id="vendedor" onchange="render()"><option value="">Todos os vendedores</option></select>
       <select id="status" onchange="render()"><option value="">Todos os status</option><option>ATIVA</option><option>CANCELADA</option></select>
     </div>
   </div>
@@ -102,6 +104,25 @@ function money(v) {
   return Number(v||0).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
 }
 
+function isMissing(value) {
+  return value == null || (typeof value === 'number' && Number.isNaN(value)) || String(value).trim() === '';
+}
+
+function displayValue(value) {
+  return isMissing(value) ? '' : String(value);
+}
+
+function populateFilter(id, field, missingLabel) {
+  const select = document.getElementById(id);
+  const values = [...new Set(dados.map(row => displayValue(row[field])).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, 'pt-BR'));
+
+  values.forEach(value => select.add(new Option(value, value)));
+  if (dados.some(row => isMissing(row[field]))) {
+    select.add(new Option(missingLabel, '__missing__'));
+  }
+}
+
 function maturidade(r) {
   const cancel = Number(r.qtd_cancelamentos||0) > 0;
   const premio = Number(r.valor_premio||0);
@@ -124,13 +145,17 @@ function filtrar() {
   const busca = document.getElementById('busca').value.toLowerCase();
   const canal = document.getElementById('canal').value;
   const produto = document.getElementById('produto').value;
+  const plano = document.getElementById('plano').value;
+  const vendedor = document.getElementById('vendedor').value;
   const status = document.getElementById('status').value;
 
   return dados.filter(r => {
-    const texto = Object.values(r).join(' ').toLowerCase();
+    const texto = Object.values(r).map(displayValue).join(' ').toLowerCase();
     return (!busca || texto.includes(busca))
       && (!canal || String(r.canal_venda) === canal)
       && (!produto || String(r.produto) === produto)
+      && (!plano || (plano === '__missing__' ? isMissing(r.plano) : String(r.plano) === plano))
+      && (!vendedor || (vendedor === '__missing__' ? isMissing(r.vendedor) : String(r.vendedor) === vendedor))
       && (!status || String(r.status_adesao) === status);
   });
 }
@@ -186,7 +211,7 @@ function render() {
       <td>${r.id_adesao||''}</td>
       <td>${r.canal_venda||''}</td>
       <td>${r.filial||''}</td>
-      <td>${r.vendedor||''}</td>
+      <td>${displayValue(r.vendedor)||'Não informado'}</td>
       <td>${r.produto||''}</td>
       <td>${r.plano||''}</td>
       <td>${r.data_adesao||''}</td>
@@ -198,6 +223,8 @@ function render() {
   }).join('');
 }
 
+populateFilter('plano', 'plano', 'Plano não informado');
+populateFilter('vendedor', 'vendedor', 'Sem vendedor informado');
 render();
 </script>
 </body>
