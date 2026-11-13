@@ -57,6 +57,9 @@ footer { text-align:center; color:#94a3b8; font-size:12px; padding:30px; }
   <div class="notice">
     Visão baseada nos contratos da planilha. CPF, nome, endereços IP, identificadores individuais e texto livre dos motivos não são exibidos; os motivos foram agrupados em categorias.
   </div>
+  <div id="loadError" class="notice" role="alert" hidden>
+    Não foi possível carregar os dados atualizados. Recarregue a página ou tente novamente mais tarde.
+  </div>
 
   <section class="kpis" aria-label="Indicadores da base filtrada">
     <div class="card"><div class="kpi-label">Contratos</div><div class="kpi-value" id="kpiTotal">0</div><div class="kpi-sub">Base filtrada</div></div>
@@ -114,8 +117,19 @@ footer { text-align:center; color:#94a3b8; font-size:12px; padding:30px; }
 
 <footer>Dados tratados localmente no navegador • Motivos apresentados em categorias agrupadas</footer>
 
-<script src="dashboard-data.js"></script>
+<script src="dashboard-data.js?v=20261113-1452" onerror="document.getElementById('loadError').hidden = false"></script>
 <script>
+window.addEventListener('error', event => {
+  if (event.target === window || event.target.tagName === 'SCRIPT') {
+    document.getElementById('loadError').hidden = false;
+  }
+});
+
+const dashboardData = window.dashboardData;
+if (!dashboardData || !Array.isArray(dashboardData.contracts)) {
+  document.getElementById('loadError').hidden = false;
+  throw new Error('Dashboard data is missing or incompatible.');
+}
 const contracts = dashboardData.contracts;
 
 function escapeHTML(value) {
