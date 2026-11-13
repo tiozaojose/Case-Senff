@@ -18,8 +18,10 @@ header p { margin:0; color:#cbd5e1; }
 .kpi-label { color:#64748b; font-size:13px; margin-bottom:8px; }
 .kpi-value { font-size:25px; font-weight:750; }
 .kpi-sub { margin-top:7px; font-size:12px; color:#64748b; }
-.filters { display:grid; grid-template-columns:2fr repeat(6,1fr); gap:12px; }
+.filters { display:grid; grid-template-columns:2fr repeat(7,1fr); gap:12px; }
 input,select { width:100%; min-width:0; padding:12px; border:1px solid #d7dce5; border-radius:9px; background:white; font-size:14px; color:#182230; }
+button { padding:10px 14px; border:1px solid #d7dce5; border-radius:9px; background:white; color:#182230; font-size:14px; font-weight:600; cursor:pointer; }
+button[type="submit"] { border-color:#1d4ed8; background:#2563eb; color:white; }
 .grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:18px; }
 .section-title { display:flex; justify-content:space-between; align-items:center; gap:12px; margin:25px 0 10px; }
 .section-title h2 { font-size:18px; margin:0; }
@@ -43,6 +45,8 @@ footer { text-align:center; color:#94a3b8; font-size:12px; padding:30px; }
 @media(max-width:1100px) { .kpis{grid-template-columns:repeat(3,1fr)} .filters{grid-template-columns:repeat(3,1fr)} }
 @media(max-width:700px) { header { padding:20px 16px; } .kpis{grid-template-columns:repeat(2,1fr)} .filters{grid-template-columns:1fr 1fr} .grid{grid-template-columns:1fr} .container{padding:12px} }
 @media(max-width:420px) { .kpis{grid-template-columns:1fr} .filters{grid-template-columns:1fr} }
+.filter-actions { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:12px; }
+.filter-buttons { display:flex; gap:8px; }
 </style>
 </head>
 <body>
@@ -70,17 +74,25 @@ footer { text-align:center; color:#94a3b8; font-size:12px; padding:30px; }
     <div class="card"><div class="kpi-label">Prêmio médio mensal</div><div class="kpi-value" id="kpiAveragePremium">R$ 0</div><div class="kpi-sub">Média por contrato filtrado</div></div>
   </section>
 
-  <section class="card" aria-label="Filtros">
+  <form id="filtersForm" class="card" aria-label="Filtros">
     <div class="filters">
-      <input id="search" type="search" placeholder="Buscar tipo, código, motivo ou origem..." aria-label="Buscar contratos" oninput="render()">
-      <input id="dateFrom" type="date" aria-label="Data inicial do cadastro" onchange="render()">
-      <input id="dateTo" type="date" aria-label="Data final do cadastro" onchange="render()">
-      <select id="productFilter" aria-label="Filtrar por tipo de seguro" onchange="render()"><option value="">Todos os tipos</option></select>
-      <select id="statusFilter" aria-label="Filtrar por status" onchange="render()"><option value="">Todos os status</option><option value="A">Ativos</option><option value="C">Cancelados</option></select>
-      <select id="reasonFilter" aria-label="Filtrar por motivo de cancelamento" onchange="render()"><option value="">Todos os motivos</option></select>
-      <select id="originFilter" aria-label="Filtrar por origem" onchange="render()"><option value="">Todas as origens</option></select>
+      <input id="search" type="search" placeholder="Buscar tipo, código, motivo ou origem..." aria-label="Buscar contratos">
+      <select id="dateField" aria-label="Campo de data"><option value="createdAt">Data do cadastro</option><option value="cancelledAt">Data do cancelamento</option></select>
+      <input id="dateFrom" type="date" aria-label="Data inicial" title="Data inicial">
+      <input id="dateTo" type="date" aria-label="Data final" title="Data final">
+      <select id="productFilter" aria-label="Filtrar por tipo de seguro"><option value="">Todos os tipos</option></select>
+      <select id="statusFilter" aria-label="Filtrar por status"><option value="">Todos os status</option></select>
+      <select id="reasonFilter" aria-label="Filtrar por motivo de cancelamento"><option value="">Todos os motivos</option></select>
+      <select id="originFilter" aria-label="Filtrar por origem"><option value="">Todas as origens</option></select>
     </div>
-  </section>
+    <div class="filter-actions">
+      <span id="filterMessage" class="insight" role="status" aria-live="polite"></span>
+      <div class="filter-buttons">
+        <button id="clearFilters" type="reset">Limpar filtros</button>
+        <button type="submit">Aplicar filtros</button>
+      </div>
+    </div>
+  </form>
 
   <section class="grid" aria-label="Análises da base">
     <div class="card">
@@ -88,7 +100,7 @@ footer { text-align:center; color:#94a3b8; font-size:12px; padding:30px; }
       <div id="productChart"></div>
     </div>
     <div class="card">
-      <div class="section-title"><h2>Cadastros por dia</h2></div>
+      <div class="section-title"><h2 id="dailyChartTitle">Contratos por data selecionada</h2></div>
       <div id="dailyChart"></div>
     </div>
     <div class="card">
@@ -117,7 +129,7 @@ footer { text-align:center; color:#94a3b8; font-size:12px; padding:30px; }
 
 <footer>Dados tratados localmente no navegador • Motivos apresentados em categorias agrupadas</footer>
 
-<script src="dashboard-data.js?v=20261113-1452" onerror="document.getElementById('loadError').hidden = false"></script>
+<script src="dashboard-data.js?v=20261113-1520" onerror="document.getElementById('loadError').hidden = false"></script>
 <script>
 window.addEventListener('error', event => {
   if (event.target === window || event.target.tagName === 'SCRIPT') {
@@ -131,6 +143,10 @@ if (!dashboardData || !Array.isArray(dashboardData.contracts)) {
   throw new Error('Dashboard data is missing or incompatible.');
 }
 const contracts = dashboardData.contracts;
+const dateLabels = {
+  createdAt: 'Data do cadastro',
+  cancelledAt: 'Data do cancelamento'
+};
 
 function escapeHTML(value) {
   return String(value ?? '').replace(/[&<>"']/g, char => ({
@@ -156,31 +172,60 @@ function formatDate(value) {
   return year && month && day ? `${day}/${month}/${year}` : value;
 }
 
-function addOptions(selectId, values) {
-  const select = document.getElementById(selectId);
-  [...new Set(values.filter(Boolean))]
-    .sort((a, b) => a.localeCompare(b, 'pt-BR'))
-    .forEach(value => select.add(new Option(value, value)));
+function updateDateBounds() {
+  const dateField = document.getElementById('dateField').value;
+  const availableDates = contracts.map(row => row[dateField]).filter(Boolean).sort();
+  const minDate = availableDates[0] || '';
+  const maxDate = availableDates.at(-1) || '';
+  const dateFrom = document.getElementById('dateFrom');
+  const dateTo = document.getElementById('dateTo');
+  dateFrom.min = minDate;
+  dateFrom.max = maxDate;
+  dateTo.min = minDate;
+  dateTo.max = maxDate;
+  dateFrom.setAttribute('aria-label', `Data inicial — ${dateLabels[dateField]}`);
+  dateTo.setAttribute('aria-label', `Data final — ${dateLabels[dateField]}`);
 }
 
-function filteredContracts() {
+function filteredContracts(excludedFilter = '') {
   const search = document.getElementById('search').value.trim().toLocaleLowerCase('pt-BR');
   const from = document.getElementById('dateFrom').value;
   const to = document.getElementById('dateTo').value;
-  const product = document.getElementById('productFilter').value;
-  const status = document.getElementById('statusFilter').value;
-  const reason = document.getElementById('reasonFilter').value;
-  const origin = document.getElementById('originFilter').value;
+  const dateField = document.getElementById('dateField').value;
+  const filters = {
+    product: document.getElementById('productFilter').value,
+    status: document.getElementById('statusFilter').value,
+    reason: document.getElementById('reasonFilter').value,
+    origin: document.getElementById('originFilter').value
+  };
+  if (from && to && from > to) return [];
 
   return contracts.filter(row => {
     const searchable = [row.product, row.code, row.reason, row.origin].join(' ').toLocaleLowerCase('pt-BR');
+    const rowDate = row[dateField];
     return (!search || searchable.includes(search))
-      && (!from || row.createdAt >= from)
-      && (!to || row.createdAt <= to)
-      && (!product || row.product === product)
-      && (!status || row.status === status)
-      && (!reason || row.reason === reason)
-      && (!origin || row.origin === origin);
+      && (!from || (rowDate && rowDate >= from))
+      && (!to || (rowDate && rowDate <= to))
+      && Object.entries(filters).every(([field, value]) => field === excludedFilter || !value || row[field] === value);
+  });
+}
+
+function refreshFilterOptions() {
+  const filters = [
+    { id: 'productFilter', field: 'product', placeholder: 'Todos os tipos' },
+    { id: 'statusFilter', field: 'status', placeholder: 'Todos os status', labels: { A: 'Ativos', C: 'Cancelados' } },
+    { id: 'reasonFilter', field: 'reason', placeholder: 'Todos os motivos' },
+    { id: 'originFilter', field: 'origin', placeholder: 'Todas as origens' }
+  ];
+
+  filters.forEach(({ id, field, placeholder, labels = {} }) => {
+    const select = document.getElementById(id);
+    const selected = select.value;
+    const values = [...new Set(filteredContracts(field).map(row => row[field]).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    select.replaceChildren(new Option(placeholder, ''));
+    values.forEach(value => select.add(new Option(labels[value] || value, value)));
+    select.value = values.includes(selected) ? selected : '';
   });
 }
 
@@ -197,6 +242,8 @@ function renderBars(elementId, counts, total, formatter = value => value.toLocal
 }
 
 function render() {
+  updateDateBounds();
+  refreshFilterOptions();
   const rows = filteredContracts();
   const active = rows.filter(row => row.status === 'A');
   const cancelled = rows.filter(row => row.status === 'C');
@@ -210,24 +257,33 @@ function render() {
   document.getElementById('kpiActivePremium').textContent = money(activePremium);
   document.getElementById('kpiAveragePremium').textContent = money(rows.length ? totalPremium / rows.length : 0);
   document.getElementById('rowCount').textContent = `${rows.length.toLocaleString('pt-BR')} registros`;
+  const dateField = document.getElementById('dateField').value;
+  const from = document.getElementById('dateFrom').value;
+  const to = document.getElementById('dateTo').value;
+  document.getElementById('filterMessage').textContent = from && to && from > to
+    ? 'A data inicial precisa ser anterior ou igual à data final.'
+    : `Exibindo ${rows.length.toLocaleString('pt-BR')} de ${contracts.length.toLocaleString('pt-BR')} contratos • período por ${dateLabels[dateField].toLocaleLowerCase('pt-BR')}`;
 
   const products = {};
   const days = {};
   const reasons = {};
   rows.forEach(row => {
     products[row.product] = (products[row.product] || 0) + 1;
-    days[row.createdAt] = (days[row.createdAt] || 0) + 1;
+    if (row[dateField]) days[row[dateField]] = (days[row[dateField]] || 0) + 1;
     if (row.status === 'C') reasons[row.reason || 'Não informado'] = (reasons[row.reason || 'Não informado'] || 0) + 1;
   });
   renderBars('productChart', products, rows.length);
-  renderBars('dailyChart', days, rows.length, value => `${value.toLocaleString('pt-BR')} contratos`, formatDate);
+  const datedRows = Object.values(days).reduce((sum, count) => sum + count, 0);
+  document.getElementById('dailyChartTitle').textContent = `Contratos por ${dateLabels[dateField].toLocaleLowerCase('pt-BR')}`;
+  renderBars('dailyChart', days, datedRows, value => `${value.toLocaleString('pt-BR')} contratos`, formatDate);
   renderBars('reasonChart', reasons, cancelled.length);
 
+  const selectedDates = rows.map(row => row[dateField]).filter(Boolean).sort();
   const period = rows.length
-    ? `${formatDate(rows.map(row => row.createdAt).sort()[0])} a ${formatDate(rows.map(row => row.createdAt).sort().at(-1))}`
+    ? `${formatDate(selectedDates[0])} a ${formatDate(selectedDates.at(-1))}`
     : 'sem período';
   document.getElementById('selectionInsight').innerHTML = `
-    <p>Período dos cadastros na seleção: <strong>${period}</strong>.</p>
+    <p>Período de ${dateLabels[dateField].toLocaleLowerCase('pt-BR')} na seleção: <strong>${period}</strong>.</p>
     <p>Prêmio mensal ativo: <strong>${money(activePremium)}</strong> em ${active.length.toLocaleString('pt-BR')} contrato(s).</p>
     <p>Cancelamentos: <strong>${cancelled.length.toLocaleString('pt-BR')}</strong> de ${rows.length.toLocaleString('pt-BR')} contratos (${percentage(rows.length ? cancelled.length / rows.length * 100 : 0)}).</p>
     <p>As categorias de motivo são agrupamentos de texto livre e não reproduzem a descrição original.</p>
@@ -250,9 +306,31 @@ function render() {
 const createdDates = contracts.map(row => row.createdAt).sort();
 document.getElementById('periodLabel').textContent =
   `Cadastros de ${formatDate(createdDates[0])} a ${formatDate(createdDates.at(-1))} • extração em ${formatDate(dashboardData.snapshotDate)}`;
-addOptions('productFilter', contracts.map(row => row.product));
-addOptions('reasonFilter', contracts.filter(row => row.status === 'C').map(row => row.reason));
-addOptions('originFilter', contracts.map(row => row.origin));
+document.getElementById('filtersForm').addEventListener('submit', event => {
+  event.preventDefault();
+  render();
+});
+document.getElementById('filtersForm').addEventListener('reset', () => {
+  requestAnimationFrame(() => {
+    updateDateBounds();
+    render();
+  });
+});
+document.getElementById('search').addEventListener('input', render);
+['dateFrom', 'dateTo'].forEach(id => {
+  const input = document.getElementById(id);
+  input.addEventListener('input', render);
+  input.addEventListener('change', render);
+});
+['dateField', 'productFilter', 'statusFilter', 'reasonFilter', 'originFilter']
+  .forEach(id => document.getElementById(id).addEventListener('change', () => {
+    if (id === 'dateField') {
+      document.getElementById('dateFrom').value = '';
+      document.getElementById('dateTo').value = '';
+    }
+    render();
+  }));
+updateDateBounds();
 render();
 </script>
 </body>
