@@ -3,206 +3,123 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Case PM — Dashboard de Adesões</title>
+<title>Dashboard — Adesões de Seguros</title>
 <style>
 * { box-sizing:border-box; }
 body { margin:0; font-family:Inter,Arial,sans-serif; background:#f5f7fb; color:#182230; }
 header { background:#111827; color:white; padding:24px 34px; }
-header .header-top { display:flex; justify-content:space-between; align-items:center; gap:24px; max-width:1450px; margin:auto; }
+header .header-inner { max-width:1450px; margin:auto; }
 header h1 { margin:0 0 6px; font-size:27px; }
 header p { margin:0; color:#cbd5e1; }
-.page-nav { display:flex; justify-content:flex-end; }
-.page-nav select { min-width:190px; border:1px solid #475569; background:#1f2937; color:white; font-weight:600; cursor:pointer; }
 .container { max-width:1450px; margin:auto; padding:24px; }
-.dashboard-view[hidden] { display:none; }
+.notice { margin-bottom:18px; padding:13px 16px; border:1px solid #bfdbfe; border-radius:10px; background:#eff6ff; color:#1e3a8a; font-size:13px; line-height:1.5; }
 .kpis { display:grid; grid-template-columns:repeat(6,1fr); gap:14px; margin-bottom:20px; }
 .card { background:white; border:1px solid #e5e7eb; border-radius:14px; padding:18px; box-shadow:0 2px 8px rgba(15,23,42,.04); }
 .kpi-label { color:#64748b; font-size:13px; margin-bottom:8px; }
 .kpi-value { font-size:25px; font-weight:750; }
 .kpi-sub { margin-top:7px; font-size:12px; color:#64748b; }
-.filters { display:grid; grid-template-columns:2fr repeat(5,1fr); gap:12px; margin-bottom:20px; }
-input,select { width:100%; padding:12px; border:1px solid #d7dce5; border-radius:9px; background:white; font-size:14px; }
-.section-title { display:flex; justify-content:space-between; align-items:center; margin:25px 0 10px; }
+.filters { display:grid; grid-template-columns:2fr repeat(6,1fr); gap:12px; }
+input,select { width:100%; min-width:0; padding:12px; border:1px solid #d7dce5; border-radius:9px; background:white; font-size:14px; color:#182230; }
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:18px; }
+.section-title { display:flex; justify-content:space-between; align-items:center; gap:12px; margin:25px 0 10px; }
 .section-title h2 { font-size:18px; margin:0; }
-.badge { display:inline-block; padding:5px 9px; border-radius:999px; font-size:11px; font-weight:700; }
+.badge { display:inline-block; padding:5px 9px; border-radius:999px; font-size:11px; font-weight:700; white-space:nowrap; }
 .high { background:#dcfce7; color:#166534; }
 .medium { background:#fef3c7; color:#92400e; }
 .low { background:#fee2e2; color:#991b1b; }
 .table-wrap { overflow:auto; background:white; border:1px solid #e5e7eb; border-radius:14px; }
-table { width:100%; border-collapse:collapse; min-width:1050px; }
+table { width:100%; border-collapse:collapse; min-width:1000px; }
 th,td { padding:12px 13px; border-bottom:1px solid #edf0f4; text-align:left; font-size:13px; }
-th { background:#f8fafc; position:sticky; top:0; z-index:1; cursor:pointer; }
+th { background:#f8fafc; position:sticky; top:0; z-index:1; }
 tr:hover td { background:#f8fafc; }
-.grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
 .bar-row { margin:12px 0; }
-.bar-label { display:flex; justify-content:space-between; font-size:13px; margin-bottom:5px; }
+.bar-label { display:flex; justify-content:space-between; gap:12px; font-size:13px; margin-bottom:5px; }
+.bar-label span { overflow-wrap:anywhere; }
 .bar { height:9px; background:#e5e7eb; border-radius:20px; overflow:hidden; }
 .fill { height:100%; background:#2563eb; border-radius:20px; }
 .insight { line-height:1.55; color:#475569; font-size:14px; }
+.empty { color:#64748b; font-size:14px; }
 footer { text-align:center; color:#94a3b8; font-size:12px; padding:30px; }
-@media(max-width:1000px) { .kpis{grid-template-columns:repeat(2,1fr)} .filters{grid-template-columns:1fr 1fr} .grid{grid-template-columns:1fr} }
-@media(max-width:700px) { header .header-top { align-items:flex-start; flex-direction:column; } .page-nav { justify-content:flex-start; } }
-@media(max-width:600px) { .kpis{grid-template-columns:1fr} .filters{grid-template-columns:1fr} .container{padding:12px} header { padding:20px 16px; } }
+@media(max-width:1100px) { .kpis{grid-template-columns:repeat(3,1fr)} .filters{grid-template-columns:repeat(3,1fr)} }
+@media(max-width:700px) { header { padding:20px 16px; } .kpis{grid-template-columns:repeat(2,1fr)} .filters{grid-template-columns:1fr 1fr} .grid{grid-template-columns:1fr} .container{padding:12px} }
+@media(max-width:420px) { .kpis{grid-template-columns:1fr} .filters{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
 <header>
-  <div class="header-top">
-    <div>
-      <h1 id="pageTitle">Dashboard — Adesões</h1>
-      <p>Case de Produto • visão comercial, cancelamentos e comissões</p>
-    </div>
-    <nav class="page-nav" aria-label="Navegação do dashboard">
-      <select id="pageNav" onchange="showView(this.value)" aria-label="Ir para aba">
-        <option value="adesoes">Adesões</option>
-        <option value="cancelamentos">Cancelamentos</option>
-        <option value="comissoes">Comissões</option>
-      </select>
-    </nav>
+  <div class="header-inner">
+    <h1>Dashboard — Adesões de Seguros</h1>
+    <p id="periodLabel">Base de contratos</p>
   </div>
 </header>
 
-<div class="container">
-  <section id="view-adesoes" class="dashboard-view">
-  <div class="kpis">
-    <div class="card"><div class="kpi-label">Total de adesões</div><div class="kpi-value" id="kpiTotal">0</div><div class="kpi-sub">Base filtrada</div></div>
-    <div class="card"><div class="kpi-label">Prêmio total</div><div class="kpi-value" id="kpiPremio">R$ 0</div><div class="kpi-sub">Valor mensal da base</div></div>
-    <div class="card"><div class="kpi-label">IOF total</div><div class="kpi-value" id="kpiIof">R$ 0</div><div class="kpi-sub">IOF da base filtrada</div></div>
-    <div class="card"><div class="kpi-label">Ticket médio</div><div class="kpi-value" id="kpiTicket">R$ 0</div><div class="kpi-sub">Prêmio médio por adesão</div></div>
-    <div class="card"><div class="kpi-label">Taxa de cancelamento</div><div class="kpi-value" id="kpiCancel">0%</div><div class="kpi-sub">Adesões com cancelamento</div></div>
-    <div class="card"><div class="kpi-label">Comissão paga</div><div class="kpi-value" id="kpiComissao">R$ 0</div><div class="kpi-sub">Total relacionado à base</div></div>
+<main class="container">
+  <div class="notice">
+    Visão baseada nos contratos da planilha. CPF, nome, endereços IP, identificadores individuais e texto livre dos motivos não são exibidos; os motivos foram agrupados em categorias.
   </div>
 
-  <div class="card">
+  <section class="kpis" aria-label="Indicadores da base filtrada">
+    <div class="card"><div class="kpi-label">Contratos</div><div class="kpi-value" id="kpiTotal">0</div><div class="kpi-sub">Base filtrada</div></div>
+    <div class="card"><div class="kpi-label">Ativos</div><div class="kpi-value" id="kpiActive">0</div><div class="kpi-sub">Contratos com status ativo</div></div>
+    <div class="card"><div class="kpi-label">Cancelados</div><div class="kpi-value" id="kpiCancelled">0</div><div class="kpi-sub">Contratos com status cancelado</div></div>
+    <div class="card"><div class="kpi-label">Taxa de cancelamento</div><div class="kpi-value" id="kpiCancelRate">0%</div><div class="kpi-sub">Cancelados sobre contratos filtrados</div></div>
+    <div class="card"><div class="kpi-label">Prêmio mensal ativo</div><div class="kpi-value" id="kpiActivePremium">R$ 0</div><div class="kpi-sub">Soma dos contratos ativos</div></div>
+    <div class="card"><div class="kpi-label">Prêmio médio mensal</div><div class="kpi-value" id="kpiAveragePremium">R$ 0</div><div class="kpi-sub">Média por contrato filtrado</div></div>
+  </section>
+
+  <section class="card" aria-label="Filtros">
     <div class="filters">
-      <input id="busca" placeholder="🔎 Buscar cliente, vendedor, filial, produto, canal..." oninput="render()">
-      <select id="canal" onchange="render()"><option value="">Todos os canais</option><option>Agência</option><option>Digital</option><option>Parceiro</option><option>Telemarketing</option></select>
-      <select id="produto" onchange="render()"><option value="">Todos os produtos</option><option>Odonto</option><option>Prestamista</option><option>Residencial</option><option>Saúde</option><option>Vida</option></select>
-      <select id="plano" onchange="render()"><option value="">Todos os planos</option></select>
-      <select id="vendedor" onchange="render()"><option value="">Todos os vendedores</option></select>
-      <select id="status" onchange="render()"><option value="">Todos os status</option><option>ATIVA</option><option>CANCELADA</option></select>
+      <input id="search" type="search" placeholder="Buscar tipo, código, motivo ou origem..." aria-label="Buscar contratos" oninput="render()">
+      <input id="dateFrom" type="date" aria-label="Data inicial do cadastro" onchange="render()">
+      <input id="dateTo" type="date" aria-label="Data final do cadastro" onchange="render()">
+      <select id="productFilter" aria-label="Filtrar por tipo de seguro" onchange="render()"><option value="">Todos os tipos</option></select>
+      <select id="statusFilter" aria-label="Filtrar por status" onchange="render()"><option value="">Todos os status</option><option value="A">Ativos</option><option value="C">Cancelados</option></select>
+      <select id="reasonFilter" aria-label="Filtrar por motivo de cancelamento" onchange="render()"><option value="">Todos os motivos</option></select>
+      <select id="originFilter" aria-label="Filtrar por origem" onchange="render()"><option value="">Todas as origens</option></select>
     </div>
-  </div>
+  </section>
 
-  <div class="grid">
+  <section class="grid" aria-label="Análises da base">
     <div class="card">
-      <div class="section-title"><h2>Performance por canal</h2></div>
-      <div id="canais"></div>
+      <div class="section-title"><h2>Contratos por tipo de seguro</h2></div>
+      <div id="productChart"></div>
     </div>
     <div class="card">
-      <div class="section-title"><h2>Leitura de maturidade</h2></div>
-      <div class="insight" id="maturidade"></div>
+      <div class="section-title"><h2>Cadastros por dia</h2></div>
+      <div id="dailyChart"></div>
     </div>
-  </div>
+    <div class="card">
+      <div class="section-title"><h2>Motivos de cancelamento</h2></div>
+      <div id="reasonChart"></div>
+    </div>
+    <div class="card">
+      <div class="section-title"><h2>Resumo da seleção</h2></div>
+      <div class="insight" id="selectionInsight"></div>
+    </div>
+  </section>
 
   <div class="section-title">
-    <h2>Detalhamento da base</h2>
-    <span id="contador" class="badge medium">0 registros</span>
+    <h2>Detalhamento dos contratos</h2>
+    <span id="rowCount" class="badge medium">0 registros</span>
   </div>
-
   <div class="table-wrap">
     <table>
       <thead>
-        <tr>
-          <th>ID</th><th>Canal</th><th>Filial</th><th>Vendedor</th><th>Produto</th>
-          <th>Plano</th><th>Data</th><th>Prêmio</th><th>IOF</th><th>Status</th><th>Cancel.</th><th>Maturidade</th>
-        </tr>
+        <tr><th>Data do cadastro</th><th>Tipo de seguro</th><th>Código</th><th>Prêmio mensal</th><th>Status</th><th>Motivo agrupado</th><th>Data do cancelamento</th><th>Origem</th></tr>
       </thead>
-      <tbody id="tbody"></tbody>
+      <tbody id="contractsBody"></tbody>
     </table>
   </div>
-  </section>
+</main>
 
-  <section id="view-cancelamentos" class="dashboard-view" hidden>
-    <div class="kpis">
-      <div class="card"><div class="kpi-label">Cancelamentos</div><div class="kpi-value" id="cancelTotal">0</div><div class="kpi-sub">Registros filtrados</div></div>
-      <div class="card"><div class="kpi-label">Prazo médio de processamento</div><div class="kpi-value" id="cancelPrazo">0 dias</div><div class="kpi-sub">Da solicitação à efetivação</div></div>
-      <div class="card"><div class="kpi-label">Adesões afetadas</div><div class="kpi-value" id="cancelAdesoes">0</div><div class="kpi-sub">Contratos com cancelamento</div></div>
-      <div class="card"><div class="kpi-label">Motivo mais frequente</div><div class="kpi-value" id="cancelMotivo">—</div><div class="kpi-sub">Entre os registros filtrados</div></div>
-    </div>
-    <div class="card">
-      <div class="filters">
-        <input id="cancelBusca" placeholder="Buscar protocolo, adesão, vendedor..." oninput="renderCancelamentos()">
-        <select id="cancelMotivoFiltro" onchange="renderCancelamentos()"><option value="">Todos os motivos</option></select>
-        <select id="cancelCanalFiltro" onchange="renderCancelamentos()"><option value="">Todos os canais</option></select>
-        <select id="cancelProdutoFiltro" onchange="renderCancelamentos()"><option value="">Todos os produtos</option></select>
-        <select id="cancelPlanoFiltro" onchange="renderCancelamentos()"><option value="">Todos os planos</option></select>
-        <select id="cancelVendedorFiltro" onchange="renderCancelamentos()"><option value="">Todos os vendedores</option></select>
-        <select id="cancelUsuarioFiltro" onchange="renderCancelamentos()"><option value="">Todos os usuários</option></select>
-      </div>
-    </div>
-    <div class="grid">
-      <div class="card"><div class="section-title"><h2>Motivos de cancelamento</h2></div><div id="cancelMotivos"></div></div>
-      <div class="card"><div class="section-title"><h2>Prazo de processamento</h2></div><div class="insight" id="cancelInsight"></div></div>
-    </div>
-    <div class="section-title"><h2>Detalhamento dos cancelamentos</h2><span id="cancelContador" class="badge medium">0 registros</span></div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>ID cancelamento</th><th>ID adesão</th><th>Vendedor</th><th>Produto</th><th>Plano</th><th>Solicitação</th><th>Efetivação</th><th>Prazo</th><th>Motivo</th><th>Canal</th><th>Protocolo</th><th>Usuário</th></tr></thead>
-        <tbody id="cancelTbody"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <section id="view-comissoes" class="dashboard-view" hidden>
-    <div class="kpis">
-      <div class="card"><div class="kpi-label">Total pago</div><div class="kpi-value" id="comissaoTotal">R$ 0</div><div class="kpi-sub">Soma dos lançamentos filtrados</div></div>
-      <div class="card"><div class="kpi-label">Lançamentos</div><div class="kpi-value" id="comissaoLancamentos">0</div><div class="kpi-sub">Registros de pagamento</div></div>
-      <div class="card"><div class="kpi-label">Valor médio por lançamento</div><div class="kpi-value" id="comissaoMedia">R$ 0</div><div class="kpi-sub">Média dos lançamentos filtrados</div></div>
-      <div class="card"><div class="kpi-label">Adesões relacionadas</div><div class="kpi-value" id="comissaoAdesoes">0</div><div class="kpi-sub">Contratos com pagamento registrado</div></div>
-    </div>
-    <div class="card">
-      <div class="filters">
-        <input id="comissaoBusca" placeholder="Buscar lançamento, adesão, lote, banco..." oninput="renderComissoes()">
-        <select id="comissaoCompetencia" onchange="renderComissoes()"><option value="">Todas as competências</option></select>
-        <select id="comissaoProduto" onchange="renderComissoes()"><option value="">Todos os produtos</option></select>
-        <select id="comissaoPlano" onchange="renderComissoes()"><option value="">Todos os planos</option></select>
-        <select id="comissaoVendedor" onchange="renderComissoes()"><option value="">Todos os vendedores</option></select>
-        <select id="comissaoLote" onchange="renderComissoes()"><option value="">Todos os lotes</option></select>
-        <select id="comissaoBanco" onchange="renderComissoes()"><option value="">Todos os bancos</option></select>
-      </div>
-    </div>
-    <div class="grid">
-      <div class="card"><div class="section-title"><h2>Pagamentos por competência</h2></div><div id="comissaoCompetencias"></div></div>
-      <div class="card"><div class="section-title"><h2>Leitura dos lançamentos</h2></div><div class="insight" id="comissaoInsight"></div></div>
-    </div>
-    <div class="section-title"><h2>Detalhamento das comissões pagas</h2><span id="comissaoContador" class="badge medium">0 registros</span></div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>ID lançamento</th><th>ID adesão</th><th>Vendedor</th><th>Produto</th><th>Plano</th><th>Competência</th><th>Valor pago</th><th>Data pagamento</th><th>Lote</th><th>Banco</th><th>Tipo</th><th>Observação</th></tr></thead>
-        <tbody id="comissaoTbody"></tbody>
-      </table>
-    </div>
-  </section>
-</div>
-
-<footer>Dashboard desenvolvido para análise exploratória do case • Dados processados localmente</footer>
+<footer>Dados tratados localmente no navegador • Motivos apresentados em categorias agrupadas</footer>
 
 <script src="dashboard-data.js"></script>
 <script>
-const dados = dashboardData.adesoes;
-const cancelamentos = dashboardData.cancelamentos;
-const comissoes = dashboardData.comissoes_pagas;
-const adesaoPorId = new Map(dados.map(row => [String(row.id_adesao), row]));
-const cancelamentoIds = new Set(cancelamentos.map(row => String(row.id_adesao)));
-const pagamentosPorAdesao = new Map();
-
-comissoes.forEach(row => {
-  const id = String(row.id_adesao);
-  pagamentosPorAdesao.set(id, (pagamentosPorAdesao.get(id) || 0) + Number(row.valor_comissao_paga || 0));
-});
-
-dados.forEach(row => {
-  row.qtd_cancelamentos = cancelamentoIds.has(String(row.id_adesao)) ? 1 : 0;
-  row.comissao_total = pagamentosPorAdesao.get(String(row.id_adesao)) || 0;
-});
-
-function money(v) {
-  return Number(v||0).toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-}
+const contracts = dashboardData.contracts;
 
 function escapeHTML(value) {
-  return String(value).replace(/[&<>"']/g, char => ({
+  return String(value ?? '').replace(/[&<>"']/g, char => ({
     '&': '&amp;',
     '<': '&lt;',
     '>': '&gt;',
@@ -211,287 +128,118 @@ function escapeHTML(value) {
   })[char]);
 }
 
-function isMissing(value) {
-  return value == null || (typeof value === 'number' && Number.isNaN(value)) || String(value).trim() === '';
+function money(value) {
+  return Number(value || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
-function displayValue(value) {
-  return isMissing(value) ? '' : String(value);
+function percentage(value) {
+  return `${Number(value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;
 }
 
 function formatDate(value) {
-  if (isMissing(value)) return '';
-  const [year, month, day] = String(value).split('-');
-  return year && month && day ? `${day}/${month}/${year}` : String(value);
+  if (!value) return '—';
+  const [year, month, day] = value.split('-');
+  return year && month && day ? `${day}/${month}/${year}` : value;
 }
 
-function dateDifference(start, end) {
-  const first = new Date(`${start}T00:00:00Z`);
-  const last = new Date(`${end}T00:00:00Z`);
-  return Math.round((last - first) / 86400000);
+function addOptions(selectId, values) {
+  const select = document.getElementById(selectId);
+  [...new Set(values.filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, 'pt-BR'))
+    .forEach(value => select.add(new Option(value, value)));
 }
 
-function populateOptions(id, values, missingLabel) {
-  const select = document.getElementById(id);
-  const uniqueValues = [...new Set(values.map(displayValue).filter(Boolean))]
-    .sort((a, b) => a.localeCompare(b, 'pt-BR'));
+function filteredContracts() {
+  const search = document.getElementById('search').value.trim().toLocaleLowerCase('pt-BR');
+  const from = document.getElementById('dateFrom').value;
+  const to = document.getElementById('dateTo').value;
+  const product = document.getElementById('productFilter').value;
+  const status = document.getElementById('statusFilter').value;
+  const reason = document.getElementById('reasonFilter').value;
+  const origin = document.getElementById('originFilter').value;
 
-  uniqueValues.forEach(value => select.add(new Option(value, value)));
-  if (missingLabel && values.some(isMissing)) {
-    select.add(new Option(missingLabel, '__missing__'));
-  }
-}
-
-function populateFilter(id, field, missingLabel) {
-  populateOptions(id, dados.map(row => row[field]), missingLabel);
-}
-
-function maturidade(r) {
-  const cancel = Number(r.qtd_cancelamentos||0) > 0;
-  const premio = Number(r.valor_premio||0);
-  const status = String(r.status_adesao||'').toUpperCase();
-
-  // Regra simples e transparente para o case:
-  // + qualidade comercial (status ativo + prêmio)
-  // - risco (cancelamento)
-  let score = 60;
-  if (status.includes('ATIV')) score += 25;
-  if (premio > 0) score += 10;
-  if (cancel) score -= 35;
-
-  if (score >= 75) return ['ALTA','high'];
-  if (score >= 50) return ['MÉDIA','medium'];
-  return ['BAIXA','low'];
-}
-
-function filtrar() {
-  const busca = document.getElementById('busca').value.toLowerCase();
-  const canal = document.getElementById('canal').value;
-  const produto = document.getElementById('produto').value;
-  const plano = document.getElementById('plano').value;
-  const vendedor = document.getElementById('vendedor').value;
-  const status = document.getElementById('status').value;
-
-  return dados.filter(r => {
-    const texto = Object.values(r).map(displayValue).join(' ').toLowerCase();
-    return (!busca || texto.includes(busca))
-      && (!canal || String(r.canal_venda) === canal)
-      && (!produto || String(r.produto) === produto)
-      && (!plano || (plano === '__missing__' ? isMissing(r.plano) : String(r.plano) === plano))
-      && (!vendedor || (vendedor === '__missing__' ? isMissing(r.vendedor) : String(r.vendedor) === vendedor))
-      && (!status || String(r.status_adesao) === status);
+  return contracts.filter(row => {
+    const searchable = [row.product, row.code, row.reason, row.origin].join(' ').toLocaleLowerCase('pt-BR');
+    return (!search || searchable.includes(search))
+      && (!from || row.createdAt >= from)
+      && (!to || row.createdAt <= to)
+      && (!product || row.product === product)
+      && (!status || row.status === status)
+      && (!reason || row.reason === reason)
+      && (!origin || row.origin === origin);
   });
+}
+
+function renderBars(elementId, counts, total, formatter = value => value.toLocaleString('pt-BR'), labelFormatter = value => value) {
+  const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const max = Math.max(...entries.map(([, value]) => value), 1);
+  document.getElementById(elementId).innerHTML = entries.map(([label, value]) => {
+    const share = percentage(total ? value / total * 100 : 0);
+    return `<div class="bar-row">
+      <div class="bar-label"><span>${escapeHTML(labelFormatter(label))}</span><strong>${formatter(value)} (${share})</strong></div>
+      <div class="bar"><div class="fill" style="width:${value / max * 100}%"></div></div>
+    </div>`;
+  }).join('') || '<p class="empty">Sem registros para os filtros selecionados.</p>';
 }
 
 function render() {
-  const rows = filtrar();
+  const rows = filteredContracts();
+  const active = rows.filter(row => row.status === 'A');
+  const cancelled = rows.filter(row => row.status === 'C');
+  const activePremium = active.reduce((sum, row) => sum + row.monthlyPremium, 0);
+  const totalPremium = rows.reduce((sum, row) => sum + row.monthlyPremium, 0);
 
-  const total = rows.length;
-  const premio = rows.reduce((s,r)=>s+Number(r.valor_premio||0),0);
-  const iof = rows.reduce((s,r)=>s+Number(r.valor_iof||0),0);
-  const comissao = rows.reduce((s,r)=>s+Number(r.comissao_total||0),0);
-  const cancelados = rows.filter(r=>Number(r.qtd_cancelamentos||0)>0).length;
+  document.getElementById('kpiTotal').textContent = rows.length.toLocaleString('pt-BR');
+  document.getElementById('kpiActive').textContent = active.length.toLocaleString('pt-BR');
+  document.getElementById('kpiCancelled').textContent = cancelled.length.toLocaleString('pt-BR');
+  document.getElementById('kpiCancelRate').textContent = percentage(rows.length ? cancelled.length / rows.length * 100 : 0);
+  document.getElementById('kpiActivePremium').textContent = money(activePremium);
+  document.getElementById('kpiAveragePremium').textContent = money(rows.length ? totalPremium / rows.length : 0);
+  document.getElementById('rowCount').textContent = `${rows.length.toLocaleString('pt-BR')} registros`;
 
-  document.getElementById('kpiTotal').textContent = total.toLocaleString('pt-BR');
-  document.getElementById('kpiPremio').textContent = money(premio);
-  document.getElementById('kpiIof').textContent = money(iof);
-  document.getElementById('kpiTicket').textContent = money(total ? premio/total : 0);
-  document.getElementById('kpiCancel').textContent = (total ? cancelados/total*100 : 0).toFixed(1)+'%';
-  document.getElementById('kpiComissao').textContent = money(comissao);
-  document.getElementById('contador').textContent = total.toLocaleString('pt-BR')+' registros';
-
-  // Canais
-  const canais = {};
-  rows.forEach(r => {
-    const c = r.canal_venda || 'Não informado';
-    canais[c] = (canais[c]||0)+1;
+  const products = {};
+  const days = {};
+  const reasons = {};
+  rows.forEach(row => {
+    products[row.product] = (products[row.product] || 0) + 1;
+    days[row.createdAt] = (days[row.createdAt] || 0) + 1;
+    if (row.status === 'C') reasons[row.reason || 'Não informado'] = (reasons[row.reason || 'Não informado'] || 0) + 1;
   });
-  const max = Math.max(...Object.values(canais),1);
-  document.getElementById('canais').innerHTML = Object.entries(canais)
-    .sort((a,b)=>b[1]-a[1])
-    .map(([c,v])=>`<div class="bar-row"><div class="bar-label"><span>${escapeHTML(c)}</span><strong>${v} (${(v/total*100).toFixed(1)}%)</strong></div><div class="bar"><div class="fill" style="width:${v/max*100}%"></div></div></div>`).join('');
+  renderBars('productChart', products, rows.length);
+  renderBars('dailyChart', days, rows.length, value => `${value.toLocaleString('pt-BR')} contratos`, formatDate);
+  renderBars('reasonChart', reasons, cancelled.length);
 
-  // Maturidade
-  const alta = rows.filter(r=>maturidade(r)[0]==='ALTA').length;
-  const media = rows.filter(r=>maturidade(r)[0]==='MÉDIA').length;
-  const baixa = rows.filter(r=>maturidade(r)[0]==='BAIXA').length;
-  document.getElementById('maturidade').innerHTML = `
-    <p><strong>Alta:</strong> ${alta} registros (${
-      total ? (alta/total*100).toFixed(1) : 0
-    }%)</p>
-    <p><strong>Média:</strong> ${media} registros (${
-      total ? (media/total*100).toFixed(1) : 0
-    }%)</p>
-    <p><strong>Baixa:</strong> ${baixa} registros (${
-      total ? (baixa/total*100).toFixed(1) : 0
-    }%)</p>
-    <hr>
-    <p><strong>Leitura:</strong> a maturidade combina sinal de atividade, existência de valor comercial e risco de cancelamento. A regra é propositalmente simples e auditável, podendo ser refinada conforme os critérios do negócio.</p>
+  const period = rows.length
+    ? `${formatDate(rows.map(row => row.createdAt).sort()[0])} a ${formatDate(rows.map(row => row.createdAt).sort().at(-1))}`
+    : 'sem período';
+  document.getElementById('selectionInsight').innerHTML = `
+    <p>Período dos cadastros na seleção: <strong>${period}</strong>.</p>
+    <p>Prêmio mensal ativo: <strong>${money(activePremium)}</strong> em ${active.length.toLocaleString('pt-BR')} contrato(s).</p>
+    <p>Cancelamentos: <strong>${cancelled.length.toLocaleString('pt-BR')}</strong> de ${rows.length.toLocaleString('pt-BR')} contratos (${percentage(rows.length ? cancelled.length / rows.length * 100 : 0)}).</p>
+    <p>As categorias de motivo são agrupamentos de texto livre e não reproduzem a descrição original.</p>
   `;
 
-  // Tabela
-  document.getElementById('tbody').innerHTML = rows.map(r => {
-    const m = maturidade(r);
-    return `<tr>
-      <td>${escapeHTML(r.id_adesao||'')}</td>
-      <td>${escapeHTML(r.canal_venda||'')}</td>
-      <td>${escapeHTML(r.filial||'')}</td>
-      <td>${escapeHTML(displayValue(r.vendedor)||'Não informado')}</td>
-      <td>${escapeHTML(r.produto||'')}</td>
-      <td>${escapeHTML(r.plano||'')}</td>
-      <td>${formatDate(r.data_adesao)}</td>
-      <td>${money(r.valor_premio)}</td>
-      <td>${money(r.valor_iof)}</td>
-      <td>${escapeHTML(r.status_adesao||'')}</td>
-      <td>${Number(r.qtd_cancelamentos||0)}</td>
-      <td><span class="badge ${m[1]}">${m[0]}</span></td>
-    </tr>`;
-  }).join('');
+  document.getElementById('contractsBody').innerHTML = rows.map(row => `
+    <tr>
+      <td>${formatDate(row.createdAt)}</td>
+      <td>${escapeHTML(row.product)}</td>
+      <td>${escapeHTML(row.code)}</td>
+      <td>${money(row.monthlyPremium)}</td>
+      <td><span class="badge ${row.status === 'A' ? 'high' : 'low'}">${row.status === 'A' ? 'Ativo' : 'Cancelado'}</span></td>
+      <td>${escapeHTML(row.reason || '—')}</td>
+      <td>${formatDate(row.cancelledAt)}</td>
+      <td>${escapeHTML(row.origin)}</td>
+    </tr>
+  `).join('');
 }
 
-function joinText(...values) {
-  return values.flatMap(value => value == null ? [] : typeof value === 'object' ? Object.values(value) : [value])
-    .map(displayValue).join(' ').toLowerCase();
-}
-
-function matchesFilter(value, filter) {
-  return !filter || (filter === '__missing__' ? isMissing(value) : String(value) === filter);
-}
-
-function renderCancelamentos() {
-  const search = document.getElementById('cancelBusca').value.trim().toLowerCase();
-  const motivo = document.getElementById('cancelMotivoFiltro').value;
-  const canal = document.getElementById('cancelCanalFiltro').value;
-  const produto = document.getElementById('cancelProdutoFiltro').value;
-  const plano = document.getElementById('cancelPlanoFiltro').value;
-  const vendedor = document.getElementById('cancelVendedorFiltro').value;
-  const usuario = document.getElementById('cancelUsuarioFiltro').value;
-  const rows = cancelamentos.filter(row => {
-    const adhesion = adesaoPorId.get(String(row.id_adesao));
-    return (!search || joinText(row, adhesion).includes(search))
-      && (!motivo || row.motivo === motivo)
-      && (!canal || row.canal_cancelamento === canal)
-      && matchesFilter(adhesion?.produto, produto)
-      && matchesFilter(adhesion?.plano, plano)
-      && matchesFilter(adhesion?.vendedor, vendedor)
-      && matchesFilter(row.usuario_registro, usuario);
-  });
-  const delays = rows.map(row => dateDifference(row.data_solicitacao, row.data_cancelamento));
-  const averageDelay = delays.length ? delays.reduce((sum, delay) => sum + delay, 0) / delays.length : 0;
-  const reasonCounts = {};
-  rows.forEach(row => { reasonCounts[row.motivo] = (reasonCounts[row.motivo] || 0) + 1; });
-  const topReason = Object.entries(reasonCounts).sort((a, b) => b[1] - a[1])[0];
-  const maxReason = Math.max(...Object.values(reasonCounts), 1);
-
-  document.getElementById('cancelTotal').textContent = rows.length.toLocaleString('pt-BR');
-  document.getElementById('cancelPrazo').textContent = `${averageDelay.toFixed(1)} dias`;
-  document.getElementById('cancelAdesoes').textContent = new Set(rows.map(row => String(row.id_adesao))).size.toLocaleString('pt-BR');
-  document.getElementById('cancelMotivo').textContent = topReason ? topReason[0] : '—';
-  document.getElementById('cancelContador').textContent = `${rows.length.toLocaleString('pt-BR')} registros`;
-  document.getElementById('cancelMotivos').innerHTML = Object.entries(reasonCounts)
-    .sort((a, b) => b[1] - a[1])
-    .map(([reason, count]) => `<div class="bar-row"><div class="bar-label"><span>${escapeHTML(reason)}</span><strong>${count} (${(count / (rows.length || 1) * 100).toFixed(1)}%)</strong></div><div class="bar"><div class="fill" style="width:${count / maxReason * 100}%"></div></div></div>`).join('')
-    || '<p>Nenhum cancelamento para os filtros selecionados.</p>';
-  document.getElementById('cancelInsight').innerHTML = `
-    <p>O prazo médio entre a solicitação e a efetivação é de <strong>${averageDelay.toFixed(1)} dias</strong> nesta seleção.</p>
-    <p>${delays.filter(delay => delay === 0).length} cancelamentos foram efetivados no mesmo dia da solicitação.</p>
-    <p>Os filtros de produto, plano e vendedor usam os dados da adesão associada ao cancelamento.</p>
-  `;
-  document.getElementById('cancelTbody').innerHTML = rows.map(row => {
-    const adhesion = adesaoPorId.get(String(row.id_adesao)) || {};
-    return `<tr>
-      <td>${escapeHTML(row.id_cancelamento)}</td><td>${escapeHTML(row.id_adesao)}</td>
-      <td>${escapeHTML(displayValue(adhesion.vendedor) || 'Não informado')}</td>
-      <td>${escapeHTML(adhesion.produto || '')}</td><td>${escapeHTML(adhesion.plano || '')}</td>
-      <td>${formatDate(row.data_solicitacao)}</td><td>${formatDate(row.data_cancelamento)}</td>
-      <td>${dateDifference(row.data_solicitacao, row.data_cancelamento)} dias</td>
-      <td>${escapeHTML(row.motivo || '')}</td><td>${escapeHTML(row.canal_cancelamento || '')}</td>
-      <td>${escapeHTML(row.protocolo || '')}</td><td>${escapeHTML(row.usuario_registro || '')}</td>
-    </tr>`;
-  }).join('');
-}
-
-function renderComissoes() {
-  const search = document.getElementById('comissaoBusca').value.trim().toLowerCase();
-  const competencia = document.getElementById('comissaoCompetencia').value;
-  const produto = document.getElementById('comissaoProduto').value;
-  const plano = document.getElementById('comissaoPlano').value;
-  const vendedor = document.getElementById('comissaoVendedor').value;
-  const lote = document.getElementById('comissaoLote').value;
-  const banco = document.getElementById('comissaoBanco').value;
-  const rows = comissoes.filter(row => {
-    const adhesion = adesaoPorId.get(String(row.id_adesao));
-    return (!search || joinText(row, adhesion).includes(search))
-      && (!competencia || row.competencia === competencia)
-      && matchesFilter(adhesion?.produto, produto)
-      && matchesFilter(adhesion?.plano, plano)
-      && matchesFilter(adhesion?.vendedor, vendedor)
-      && (!lote || row.lote_pagamento === lote)
-      && (!banco || row.banco_destino === banco);
-  });
-  const total = rows.reduce((sum, row) => sum + Number(row.valor_comissao_paga || 0), 0);
-  const uniqueAdhesions = new Set(rows.map(row => String(row.id_adesao)));
-  const byCompetence = {};
-  rows.forEach(row => { byCompetence[row.competencia] = (byCompetence[row.competencia] || 0) + Number(row.valor_comissao_paga || 0); });
-  const maxCompetence = Math.max(...Object.values(byCompetence), 1);
-  const reprocessed = rows.filter(row => row.observacao === 'Reprocessamento').length;
-
-  document.getElementById('comissaoTotal').textContent = money(total);
-  document.getElementById('comissaoLancamentos').textContent = rows.length.toLocaleString('pt-BR');
-  document.getElementById('comissaoMedia').textContent = money(rows.length ? total / rows.length : 0);
-  document.getElementById('comissaoAdesoes').textContent = uniqueAdhesions.size.toLocaleString('pt-BR');
-  document.getElementById('comissaoContador').textContent = `${rows.length.toLocaleString('pt-BR')} lançamentos`;
-  document.getElementById('comissaoCompetencias').innerHTML = Object.entries(byCompetence)
-    .sort((a, b) => a[0].localeCompare(b[0]))
-    .map(([period, amount]) => `<div class="bar-row"><div class="bar-label"><span>${escapeHTML(period)}</span><strong>${money(amount)}</strong></div><div class="bar"><div class="fill" style="width:${amount / maxCompetence * 100}%"></div></div></div>`).join('')
-    || '<p>Nenhum pagamento para os filtros selecionados.</p>';
-  document.getElementById('comissaoInsight').innerHTML = `
-    <p>O total soma os <strong>${rows.length} lançamentos</strong> presentes na planilha, inclusive registros marcados como reprocessamento.</p>
-    <p>Há <strong>${reprocessed}</strong> lançamento(s) de reprocessamento nesta seleção.</p>
-    <p>Os filtros de produto, plano e vendedor usam os dados da adesão associada a cada pagamento.</p>
-  `;
-  document.getElementById('comissaoTbody').innerHTML = rows.map(row => {
-    const adhesion = adesaoPorId.get(String(row.id_adesao)) || {};
-    return `<tr>
-      <td>${escapeHTML(row.id_lancamento)}</td><td>${escapeHTML(row.id_adesao)}</td>
-      <td>${escapeHTML(displayValue(adhesion.vendedor) || 'Não informado')}</td>
-      <td>${escapeHTML(adhesion.produto || '')}</td><td>${escapeHTML(adhesion.plano || '')}</td>
-      <td>${escapeHTML(row.competencia || '')}</td><td>${money(row.valor_comissao_paga)}</td>
-      <td>${formatDate(row.data_pagamento)}</td><td>${escapeHTML(row.lote_pagamento || '')}</td>
-      <td>${escapeHTML(row.banco_destino || '')}</td><td>${escapeHTML(row.tipo_lancamento || '')}</td>
-      <td>${escapeHTML(row.observacao || '')}</td>
-    </tr>`;
-  }).join('');
-}
-
-function showView(view) {
-  const titles = { adesoes: 'Dashboard — Adesões', cancelamentos: 'Dashboard — Cancelamentos', comissoes: 'Dashboard — Comissões' };
-  if (!titles[view]) return;
-  document.querySelectorAll('.dashboard-view').forEach(section => {
-    section.hidden = section.id !== `view-${view}`;
-  });
-  document.getElementById('pageNav').value = view;
-  document.getElementById('pageTitle').textContent = titles[view];
-  document.title = `${titles[view]} | Case PM`;
-}
-
-populateFilter('plano', 'plano', 'Plano não informado');
-populateFilter('vendedor', 'vendedor', 'Sem vendedor informado');
-populateOptions('cancelMotivoFiltro', cancelamentos.map(row => row.motivo));
-populateOptions('cancelCanalFiltro', cancelamentos.map(row => row.canal_cancelamento));
-populateOptions('cancelProdutoFiltro', cancelamentos.map(row => adesaoPorId.get(String(row.id_adesao))?.produto));
-populateOptions('cancelPlanoFiltro', cancelamentos.map(row => adesaoPorId.get(String(row.id_adesao))?.plano));
-populateOptions('cancelVendedorFiltro', cancelamentos.map(row => adesaoPorId.get(String(row.id_adesao))?.vendedor), 'Sem vendedor informado');
-populateOptions('cancelUsuarioFiltro', cancelamentos.map(row => row.usuario_registro), 'Usuário não informado');
-populateOptions('comissaoCompetencia', comissoes.map(row => row.competencia));
-populateOptions('comissaoProduto', comissoes.map(row => adesaoPorId.get(String(row.id_adesao))?.produto));
-populateOptions('comissaoPlano', comissoes.map(row => adesaoPorId.get(String(row.id_adesao))?.plano));
-populateOptions('comissaoVendedor', comissoes.map(row => adesaoPorId.get(String(row.id_adesao))?.vendedor), 'Sem vendedor informado');
-populateOptions('comissaoLote', comissoes.map(row => row.lote_pagamento));
-populateOptions('comissaoBanco', comissoes.map(row => row.banco_destino));
+const createdDates = contracts.map(row => row.createdAt).sort();
+document.getElementById('periodLabel').textContent =
+  `Cadastros de ${formatDate(createdDates[0])} a ${formatDate(createdDates.at(-1))} • extração em ${formatDate(dashboardData.snapshotDate)}`;
+addOptions('productFilter', contracts.map(row => row.product));
+addOptions('reasonFilter', contracts.filter(row => row.status === 'C').map(row => row.reason));
+addOptions('originFilter', contracts.map(row => row.origin));
 render();
-renderCancelamentos();
-renderComissoes();
 </script>
 </body>
 </html>
